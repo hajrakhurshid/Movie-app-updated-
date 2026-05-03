@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Movie Search App</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    margin-top: 40px;
+}
+
+.search-box {
+    margin: 20px;
+}
+
+input {
+    padding: 12px;
+    width: 260px;
+    border: none;
+    border-radius: 25px;
+    outline: none;
+}
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 25px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+}
+
+/* Container for dynamic content */
+#result {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Movie card */
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 12px;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* Image */
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.card h3 {
+    margin: 8px 0;
+}
+
+.card p {
+    margin: 4px 0;
+    color: #cbd5e1;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎬 Movie Search App</h2>
+
+<div class="search-box">
+    <input type="text" id="movie" placeholder="Search movie...">
+    <button onclick="searchMovie()">Search</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+function searchMovie() {
+    let movie = document.getElementById("movie").value.trim();
+    let result = document.getElementById("result");
+
+    if (!movie) {
+        result.innerHTML = "⚠️ Enter a movie name";
+        return;
+    }
+
+    result.innerHTML = "Loading... ⏳";
+
+    // 🌐 API call (Fetch API)
+    fetch(`https://api.tvmaze.com/search/shows?q=${movie}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let output = "";
+
+            if (data.length > 0) {
+
+                // 🔁 Dynamic Content Generation (Day 18)
+                data.forEach(item => {
+                    let show = item.show;
+
+                    output += `
+                        <div class="card">
+                            <img src="${show.image ? show.image.medium : ''}">
+                            <h3>${show.name}</h3>
+                            <p><b>Language:</b> ${show.language}</p>
+                            <p><b>Rating:</b> ${show.rating.average || "N/A"}</p>
+                        </div>
+                    `;
+                });
+
+                result.innerHTML = output;
+
+            } else {
+                result.innerHTML = "❌ No movies found";
+            }
+
+        })
+        .catch(err => {
+            result.innerHTML = "⚠️ Error fetching data";
+        });
+}
+</script>
+
+</body>
+</html>
