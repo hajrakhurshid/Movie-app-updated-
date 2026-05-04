@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Movie Search App</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #0f172a, #1e293b);
+    color: white;
+    margin: 0;
+    text-align: center;
+}
+
+h2 {
+    margin-top: 40px;
+    font-size: 32px;
+}
+
+.search-box {
+    margin: 20px;
+}
+
+input {
+    padding: 12px;
+    width: 260px;
+    border: none;
+    border-radius: 25px;
+    outline: none;
+}
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 25px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Loader */
+.loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #ef4444;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 30px auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Results */
+#result {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Card */
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 15px;
+    width: 250px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.03);
+}
+
+/* Image */
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* Text */
+.card h3 {
+    margin: 5px 0;
+}
+
+.card p {
+    margin: 4px 0;
+    color: #cbd5e1;
+}
+
+/* Rating badge */
+.rating {
+    background: #22c55e;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: inline-block;
+    margin-top: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎬 Movie Search App</h2>
+
+<div class="search-box">
+    <input type="text" id="movie" placeholder="Search movie...">
+    <button onclick="searchMovie()">Search</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+// Enter key support
+document.getElementById("movie").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") searchMovie();
+});
+
+function searchMovie() {
+    let movie = document.getElementById("movie").value.trim();
+    let result = document.getElementById("result");
+
+    if (!movie) {
+        result.innerHTML = "<p>⚠️ Please enter a movie name</p>";
+        return;
+    }
+
+    // Loader
+    result.innerHTML = '<div class="loader"></div>';
+
+    fetch(`https://api.tvmaze.com/search/shows?q=${movie}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.length === 0) {
+                result.innerHTML = "<p>❌ No movies found</p>";
+                return;
+            }
+
+            let output = "";
+
+            data.forEach(item => {
+                let show = item.show;
+
+                let image = show.image 
+                    ? show.image.medium 
+                    : "https://via.placeholder.com/250x180?text=No+Image";
+
+                let rating = show.rating.average 
+                    ? `<span class="rating">⭐ ${show.rating.average}</span>` 
+                    : `<span class="rating">⭐ N/A</span>`;
+
+                output += `
+                    <div class="card" onclick="openDetails('${show.url}')">
+                        <img src="${image}">
+                        <h3>${show.name}</h3>
+                        <p>${show.language}</p>
+                        ${rating}
+                    </div>
+                `;
+            });
+
+            result.innerHTML = output;
+
+        })
+        .catch(() => {
+            result.innerHTML = "<p>⚠️ Error fetching data. Try again.</p>";
+        });
+}
+
+// Open show details
+function openDetails(url) {
+    window.open(url, "_blank");
+}
+</script>
+
+</body>
+</html>
